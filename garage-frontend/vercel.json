@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "https://garage-auto-backend.onrender.com/api/:match*"
+      "source": "/api/:path*",
+      "destination": "https://garage-auto-backend.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
