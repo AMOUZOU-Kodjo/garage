@@ -5,22 +5,22 @@ import { useState } from 'react';
 
 const navConfig = {
   receptionniste: [
-    { to: '/receptionniste', label: 'Dashboard', icon: Home },
-    { to: '/receptionniste/clients', label: 'Clients', icon: Users },
-    { to: '/receptionniste/vehicules', label: 'Véhicules', icon: Car },
-    { to: '/receptionniste/reservations', label: 'Réservations', icon: Calendar },
-    { to: '/receptionniste/offres', label: 'Offres', icon: Gift },
+    { to: '/app/receptionniste', label: 'Dashboard', icon: Home },
+    { to: '/app/receptionniste/clients', label: 'Clients', icon: Users },
+    { to: '/app/receptionniste/vehicules', label: 'Véhicules', icon: Car },
+    { to: '/app/receptionniste/reservations', label: 'Réservations', icon: Calendar },
+    { to: '/app/receptionniste/offres', label: 'Offres', icon: Gift },
   ],
   mecanicien: [
-    { to: '/mecanicien', label: 'Dashboard', icon: Home },
-    { to: '/mecanicien/vehicules', label: 'Mes Véhicules', icon: Car },
-    { to: '/mecanicien/reparations', label: 'Réparations', icon: Wrench },
+    { to: '/app/mecanicien', label: 'Dashboard', icon: Home },
+    { to: '/app/mecanicien/vehicules', label: 'Mes Véhicules', icon: Car },
+    { to: '/app/mecanicien/reparations', label: 'Réparations', icon: Wrench },
   ],
   directeur: [
-    { to: '/directeur', label: 'Dashboard', icon: Home },
-    { to: '/directeur/mecaniciens', label: 'Mécaniciens', icon: Settings },
-    { to: '/directeur/finances', label: 'Finances', icon: Euro },
-    { to: '/directeur/statistiques', label: 'Statistiques', icon: BarChart3 },
+    { to: '/app/directeur', label: 'Dashboard', icon: Home },
+    { to: '/app/directeur/mecaniciens', label: 'Mécaniciens', icon: Settings },
+    { to: '/app/directeur/finances', label: 'Finances', icon: Euro },
+    { to: '/app/directeur/statistiques', label: 'Statistiques', icon: BarChart3 },
   ],
 };
 

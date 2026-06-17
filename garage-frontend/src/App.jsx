@@ -60,6 +60,6 @@ export default function App() {
 function RoleRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  const routes = { receptionniste: '/receptionniste', mecanicien: '/mecanicien', directeur: '/directeur' };
+  const routes = { receptionniste: '/app/receptionniste', mecanicien: '/app/mecanicien', directeur: '/app/directeur' };
   return <Navigate to={routes[user.role] || '/login'} replace />;
 }

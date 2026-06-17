@@ -15,7 +15,7 @@ export default function Login() {
     setError('');
     try {
       const user = await login(email, password);
-      const routes = { receptionniste: '/receptionniste', mecanicien: '/mecanicien', directeur: '/directeur' };
+      const routes = { receptionniste: '/app/receptionniste', mecanicien: '/app/mecanicien', directeur: '/app/directeur' };
       navigate(routes[user.role] || '/');
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');
