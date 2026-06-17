@@ -10,7 +10,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: (origin, callback) => {
+    const allowed = process.env.CORS_ORIGIN || '';
+    const list = allowed.split(',').map(s => s.trim()).filter(Boolean);
+    if (!origin || list.length === 0 || list.includes(origin) || list.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
