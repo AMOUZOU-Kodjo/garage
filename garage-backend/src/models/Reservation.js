@@ -21,6 +21,7 @@ const Reservation = sequelize.define('Reservation', {
   vehicule_annee: { type: DataTypes.INTEGER },
   vehicule_immatriculation: { type: DataTypes.STRING },
   notes: { type: DataTypes.TEXT },
+  vehicule_id: { type: DataTypes.INTEGER },
 });
 
 module.exports = Reservation;

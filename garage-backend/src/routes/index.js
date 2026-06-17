@@ -43,6 +43,7 @@ router.put('/reservations/:id', auth, reservationCtrl.update);
 router.put('/reservations/:id/confirmer', auth, role('receptionniste', 'directeur'), reservationCtrl.confirmer);
 router.put('/reservations/:id/terminer', auth, role('mecanicien', 'receptionniste', 'directeur'), reservationCtrl.terminer);
 router.put('/reservations/:id/annuler', auth, role('receptionniste', 'directeur'), reservationCtrl.annuler);
+router.put('/reservations/:id/convert', auth, role('receptionniste', 'directeur'), reservationCtrl.convert);
 router.delete('/reservations/:id', auth, role('directeur'), reservationCtrl.destroy);
 
 // Repairs

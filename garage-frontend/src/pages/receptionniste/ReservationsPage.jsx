@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
-import { Search, Plus, Check, X, Calendar, Clock, User, Wrench } from 'lucide-react';
+import { Search, Plus, Check, X, Calendar, Clock, User, Wrench, ArrowRight, Users, Car } from 'lucide-react';
 import { cardHover } from '../../components/AnimatedPage';
 
 export default function ReservationsPage() {
@@ -10,6 +10,7 @@ export default function ReservationsPage() {
   const [mechanics, setMechanics] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [showConvertModal, setShowConvertModal] = useState(null);
   const [form, setForm] = useState({ date_reservation: '', heure_reservation: '', description_probleme: '', client_id: '', mecanicien_id: '' });
 
   useEffect(() => {
@@ -113,10 +114,19 @@ export default function ReservationsPage() {
                 {statutBadge(r.statut)}
                 {r.statut === 'en_attente' && (
                   <>
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleConfirm(r.id)}
-                      className="p-2 hover:bg-green-50 rounded-lg transition-colors"><Check className="h-4 w-4 text-green-600" /></motion.button>
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleCancel(r.id)}
-                      className="p-2 hover:bg-red-50 rounded-lg transition-colors"><X className="h-4 w-4 text-red-600" /></motion.button>
+                    {r.source === 'public' ? (
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowConvertModal(r)}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium transition-colors">
+                        <ArrowRight className="h-3.5 w-3.5" /> Traiter
+                      </motion.button>
+                    ) : (
+                      <>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleConfirm(r.id)}
+                          className="p-2 hover:bg-green-50 rounded-lg transition-colors"><Check className="h-4 w-4 text-green-600" /></motion.button>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleCancel(r.id)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"><X className="h-4 w-4 text-red-600" /></motion.button>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -125,6 +135,16 @@ export default function ReservationsPage() {
         ))}
         {filtered.length === 0 && <div className="text-center py-12 text-gray-400">Aucune réservation trouvée</div>}
       </div>
+
+      {showConvertModal && (
+        <ConvertModal
+          reservation={showConvertModal}
+          clients={clients}
+          mechanics={mechanics}
+          onClose={() => setShowConvertModal(null)}
+          onDone={() => { setShowConvertModal(null); loadReservations(); }}
+        />
+      )}
 
       {showModal && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
@@ -168,5 +188,100 @@ export default function ReservationsPage() {
         </motion.div>
       )}
     </div>
+  );
+}
+
+function ConvertModal({ reservation, clients, mechanics, onClose, onDone }) {
+  const [clientOption, setClientOption] = useState('new');
+  const [clientId, setClientId] = useState('');
+  const [mecanicienId, setMecanicienId] = useState('');
+  const [vehicleImmat, setVehicleImmat] = useState(reservation.vehicule_immatriculation || '');
+  const [vehicleMarque, setVehicleMarque] = useState(reservation.vehicule_marque || '');
+  const [vehicleModele, setVehicleModele] = useState(reservation.vehicule_modele || '');
+  const [vehicleAnnee, setVehicleAnnee] = useState(reservation.vehicule_annee || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const payload = {
+        mecanicien_id: mecanicienId || null,
+        create_vehicle: true,
+      };
+      if (clientOption === 'existing') {
+        if (!clientId) { setError('Sélectionnez un client'); setLoading(false); return; }
+        payload.client_id = parseInt(clientId);
+      } else {
+        payload.create_client = true;
+      }
+      await api.put(`/reservations/${reservation.id}/convert`, payload);
+      onDone();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la conversion');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-bold mb-1">Traiter la réservation</h2>
+        <p className="text-sm text-gray-500 mb-4">Réservation {reservation.reference}</p>
+
+        <div className="bg-blue-50 rounded-xl p-3 mb-4 text-sm space-y-1">
+          <p><span className="font-medium">Client:</span> {reservation.client_prenom} {reservation.client_nom}</p>
+          <p><span className="font-medium">Tél:</span> {reservation.client_telephone}</p>
+          {reservation.client_email && <p><span className="font-medium">Email:</span> {reservation.client_email}</p>}
+          <p><span className="font-medium">Date:</span> {reservation.date_reservation} à {reservation.heure_reservation}</p>
+          {reservation.description_probleme && <p><span className="font-medium">Problème:</span> {reservation.description_probleme}</p>}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
+            <div className="flex gap-2 mb-2">
+              <button type="button" onClick={() => setClientOption('new')}
+                className={`flex-1 py-1.5 text-sm rounded-lg transition-colors ${clientOption === 'new' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                <User className="h-3.5 w-3.5 inline mr-1" /> Nouveau
+              </button>
+              <button type="button" onClick={() => setClientOption('existing')}
+                className={`flex-1 py-1.5 text-sm rounded-lg transition-colors ${clientOption === 'existing' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                <Users className="h-3.5 w-3.5 inline mr-1" /> Existant
+              </button>
+            </div>
+            {clientOption === 'existing' && (
+              <select value={clientId} onChange={(e) => setClientId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <option value="">Sélectionner un client</option>
+                {clients.map((c) => <option key={c.id} value={c.id}>{c.prenom} {c.nom} - {c.telephone}</option>)}
+              </select>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mécanicien</label>
+            <select value={mecanicienId} onChange={(e) => setMecanicienId(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="">Non assigné</option>
+              {mechanics.map((m) => <option key={m.id} value={m.id}>{m.prenom} {m.nom}</option>)}
+            </select>
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
+            <button type="submit" disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95 disabled:opacity-50">
+              {loading ? 'Traitement...' : 'Confirmer & créer'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 }

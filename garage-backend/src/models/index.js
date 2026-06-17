@@ -21,6 +21,9 @@ Reservation.belongsTo(User, { foreignKey: 'mecanicien_id', as: 'mecanicien' });
 User.hasMany(Reservation, { foreignKey: 'receptionniste_id', as: 'reservations_receptionniste' });
 Reservation.belongsTo(User, { foreignKey: 'receptionniste_id', as: 'receptionniste' });
 
+Vehicle.hasMany(Reservation, { foreignKey: 'vehicule_id', as: 'reservations' });
+Reservation.belongsTo(Vehicle, { foreignKey: 'vehicule_id', as: 'vehicle' });
+
 Vehicle.hasOne(Repair, { foreignKey: 'vehicule_id', as: 'reparation' });
 Repair.belongsTo(Vehicle, { foreignKey: 'vehicule_id', as: 'vehicule' });
 
