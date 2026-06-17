@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Menu, X, Wrench, Car, Calendar, Users, BarChart3, ClipboardList, Gift, Settings, Home, Euro } from 'lucide-react';
+import { LogOut, Menu, X, Wrench, Car, Calendar, Users, BarChart3, ClipboardList, Gift, Settings, Home, Euro, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 
 const navConfig = {
@@ -10,6 +10,7 @@ const navConfig = {
     { to: '/app/receptionniste/vehicules', label: 'Véhicules', icon: Car },
     { to: '/app/receptionniste/reservations', label: 'Réservations', icon: Calendar },
     { to: '/app/receptionniste/offres', label: 'Offres', icon: Gift },
+    { to: '/app/receptionniste/temoignages', label: 'Témoignages', icon: MessageSquare },
   ],
   mecanicien: [
     { to: '/app/mecanicien', label: 'Dashboard', icon: Home },

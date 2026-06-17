@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Wrench, Calendar, Search, Star, Clock, Shield, ChevronRight, Phone, Mail, MapPin, Quote, Car, Users, Award, CheckCircle } from 'lucide-react';
 
 const services = [
@@ -6,13 +7,6 @@ const services = [
   { icon: Car, label: 'Carrosserie & Peinture', desc: 'Réparation de carrosserie, peinture, débosselage, rénovation optiques.' },
   { icon: Shield, label: 'Diagnostic électronique', desc: 'Valise diagnostic dernière génération pour identifier rapidement les pannes.' },
   { icon: Clock, label: 'Entretien & Révision', desc: 'Vidange, filtres, pneus, climatisation — respectez le carnet d\'entretien.' },
-];
-
-const testimonials = [
-  { name: 'Sophie Lemoine', vehicle: 'Peugeot 308', text: 'Accueil chaleureux, travail soigné et délais tenus. Ils ont remplacé mon embrayage en une journée. Je recommande les yeux fermés !', rating: 5 },
-  { name: 'Marc Moreau', vehicle: 'Renault Clio', text: 'Je viens depuis 3 ans, jamais déçu. L\'équipe est compétente et les prix sont transparents. Mon garage de confiance.', rating: 5 },
-  { name: 'Julie Bernard', vehicle: 'Citroën C3', text: 'Très professionnels ! Diagnostic rapide, réparation efficace et suivi impeccable. Le service de courtoisie avec véhicule de prêt est un vrai plus.', rating: 5 },
-  { name: 'Thomas Dupuis', vehicle: 'Toyota Corolla', text: 'Un garage à l\'écoute qui ne cherche pas à vous vendre des réparations inutiles. Les devis sont clairs et respectés.', rating: 5 },
 ];
 
 const stats = [
@@ -23,6 +17,15 @@ const stats = [
 ];
 
 export default function Accueil() {
+  const [testimonials, setTestimonials] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/public/testimonials')
+      .then(r => r.json())
+      .then(setTestimonials)
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* ===== NAV ===== */}
@@ -59,7 +62,7 @@ export default function Accueil() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Votre garage de confiance<br />
-              <span className="text-blue-200">à Marseille</span>
+              <span className="text-blue-200">à Lomé - TOGO</span>
             </h1>
             <p className="text-lg text-blue-100 mb-8 leading-relaxed">
               Fort de 15 années d'expertise, GarageAuto vous accueille du lundi au samedi 
@@ -180,25 +183,32 @@ export default function Accueil() {
             <p className="text-gray-500 max-w-xl mx-auto">La satisfaction de nos clients est notre meilleure publicité.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {testimonials.map((t) => (
-              <div key={t.name} className="bg-white rounded-2xl p-6 shadow-sm relative">
+            {testimonials.slice(0, 4).map((t) => (
+              <div key={t.id} className="bg-white rounded-2xl p-6 shadow-sm relative">
                 <Quote className="h-8 w-8 text-blue-100 absolute top-4 right-4" />
                 <div className="flex items-center gap-1 mb-3">
-                  {[1,2,3,4,5].map(i => <Star key={i} className={`h-4 w-4 ${i <= t.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />)}
+                  {[1,2,3,4,5].map(i => <Star key={i} className={`h-4 w-4 ${i <= t.note ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />)}
                 </div>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4 italic">"{t.text}"</p>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 italic">"{t.texte}"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
-                    {t.name.charAt(0)}
+                    {(t.prenom || t.nom).charAt(0)}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.vehicle}</p>
+                    <p className="font-semibold text-gray-800 text-sm">{t.prenom} {t.nom}</p>
+                    <p className="text-xs text-gray-400">{t.vehicule}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          {testimonials.length > 4 && (
+            <div className="text-center mt-8">
+              <Link to="/testimonials" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                Voir tous les avis ({testimonials.length})
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -232,6 +242,7 @@ export default function Accueil() {
               <div className="space-y-2 text-sm">
                 <Link to="/reservation" className="block hover:text-blue-400">Prendre rendez-vous</Link>
                 <Link to="/suivi" className="block hover:text-blue-400">Suivre ma réservation</Link>
+                <Link to="/avis" className="block hover:text-blue-400">Avis clients</Link>
                 <Link to="/login" className="block hover:text-blue-400">Espace personnel</Link>
               </div>
             </div>

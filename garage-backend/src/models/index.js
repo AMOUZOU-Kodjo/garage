@@ -4,6 +4,7 @@ const Vehicle = require('./Vehicle');
 const Reservation = require('./Reservation');
 const Repair = require('./Repair');
 const Offer = require('./Offer');
+const Testimonial = require('./Testimonial');
 
 User.hasMany(Vehicle, { foreignKey: 'mecanicien_id', as: 'vehicules_assignes' });
 Vehicle.belongsTo(User, { foreignKey: 'mecanicien_id', as: 'mecanicien' });
@@ -29,4 +30,4 @@ Repair.belongsTo(User, { foreignKey: 'mecanicien_id', as: 'mecanicien' });
 Reservation.hasOne(Repair, { foreignKey: 'reservation_id', as: 'reparation' });
 Repair.belongsTo(Reservation, { foreignKey: 'reservation_id', as: 'reservation' });
 
-module.exports = { User, Client, Vehicle, Reservation, Repair, Offer };
+module.exports = { User, Client, Vehicle, Reservation, Repair, Offer, Testimonial };

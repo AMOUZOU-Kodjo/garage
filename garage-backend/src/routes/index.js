@@ -12,6 +12,7 @@ const offerCtrl = require('../controllers/offerController');
 const dashboardCtrl = require('../controllers/dashboardController');
 const receiptCtrl = require('../controllers/receiptController');
 const financeCtrl = require('../controllers/financeController');
+const testimonialCtrl = require('../controllers/testimonialController');
 
 // Auth
 router.post('/auth/login', authCtrl.login);
@@ -74,5 +75,12 @@ router.get('/vehicles/:id/receipt', auth, role('receptionniste', 'directeur'), r
 
 // Finances (Director)
 router.get('/finances/summary', auth, role('directeur'), financeCtrl.summary);
+
+// Testimonials
+router.get('/testimonials/admin', auth, role('directeur', 'receptionniste'), testimonialCtrl.index);
+router.post('/testimonials', auth, role('directeur', 'receptionniste'), testimonialCtrl.store);
+router.put('/testimonials/:id', auth, role('directeur', 'receptionniste'), testimonialCtrl.update);
+router.put('/testimonials/:id/toggle-actif', auth, role('directeur', 'receptionniste'), testimonialCtrl.toggleActif);
+router.delete('/testimonials/:id', auth, role('directeur'), testimonialCtrl.destroy);
 
 module.exports = router;

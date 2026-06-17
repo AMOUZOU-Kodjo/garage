@@ -18,6 +18,8 @@ import Layout from './components/Layout';
 import Accueil from './pages/public/Accueil';
 import PublicReservation from './pages/public/Reservation';
 import PublicSuivi from './pages/public/Suivi';
+import PublicTestimonials from './pages/public/Testimonials';
+import GestionTemoignages from './pages/receptionniste/GestionTemoignages';
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="/reservation" element={<PublicReservation />} />
           <Route path="/reservation/:reference" element={<PublicSuivi />} />
           <Route path="/suivi" element={<PublicSuivi />} />
+          <Route path="/testimonials" element={<PublicTestimonials />} />
+          <Route path="/avis" element={<PublicTestimonials />} />
           <Route path="/login" element={<Login />} />
           <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<RoleRedirect />} />
@@ -37,6 +41,7 @@ export default function App() {
               <Route path="vehicules" element={<VehiclesPage />} />
               <Route path="reservations" element={<ReservationsPage />} />
               <Route path="offres" element={<OffersPage />} />
+              <Route path="temoignages" element={<GestionTemoignages />} />
             </Route>
             <Route path="mecanicien">
               <Route index element={<DashboardMecanicien />} />
