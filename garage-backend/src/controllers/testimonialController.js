@@ -17,11 +17,22 @@ exports.index = async (req, res) => {
   res.json(testimonials);
 };
 
+exports.publicStore = async (req, res) => {
+  try {
+    const { nom, prenom, vehicule, texte, note } = req.body;
+    if (!nom || !texte) return res.status(400).json({ message: 'Nom et texte requis' });
+    const testimonial = await Testimonial.create({ nom, prenom, vehicule, texte, note: note || 5, actif: false });
+    res.status(201).json({ message: 'Merci pour votre avis ! Il sera publié après modération.', id: testimonial.id });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur', error: error.message });
+  }
+};
+
 exports.store = async (req, res) => {
   try {
     const { nom, prenom, vehicule, texte, note } = req.body;
     if (!nom || !texte) return res.status(400).json({ message: 'Nom et texte requis' });
-    const testimonial = await Testimonial.create({ nom, prenom, vehicule, texte, note: note || 5 });
+    const testimonial = await Testimonial.create({ nom, prenom, vehicule, texte, note: note || 5, actif: true });
     res.status(201).json(testimonial);
   } catch (error) {
     res.status(500).json({ message: 'Erreur', error: error.message });

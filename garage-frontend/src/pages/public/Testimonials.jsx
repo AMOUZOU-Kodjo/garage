@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Quote, ArrowLeft, Wrench } from 'lucide-react';
+import { Star, Quote, ArrowLeft, Send } from 'lucide-react';
 
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ nom: '', prenom: '', vehicule: '', texte: '', note: 5 });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch('/api/public/testimonials')
@@ -11,6 +15,34 @@ export default function Testimonials() {
       .then(setTestimonials)
       .catch(() => {});
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const r = await fetch('/api/public/testimonials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!r.ok) return;
+      setSubmitted(true);
+      setShowForm(false);
+      setForm({ nom: '', prenom: '', vehicule: '', texte: '', note: 5 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const StarsInput = ({ value, onChange }) => (
+    <div className="flex gap-1">
+      {[1,2,3,4,5].map(i => (
+        <button key={i} type="button" onClick={() => onChange(i)} className="p-0.5">
+          <Star className={`h-6 w-6 ${i <= value ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -23,11 +55,17 @@ export default function Testimonials() {
             <h1 className="text-3xl font-bold text-gray-800">Avis clients</h1>
             <p className="text-gray-500">Ce que nos clients disent de nous</p>
           </div>
-          <Link to="/reservation"
+          <button onClick={() => setShowForm(true)}
             className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 text-sm font-medium flex items-center gap-2">
-            Prendre RDV
-          </Link>
+            <Send className="h-4 w-4" /> Donner mon avis
+          </button>
         </div>
+
+        {submitted && (
+          <div className="mb-8 bg-green-50 border border-green-200 text-green-700 rounded-xl p-4 text-center">
+            Merci pour votre avis ! Il sera publié après modération par notre équipe.
+          </div>
+        )}
 
         {testimonials.length === 0 && (
           <div className="text-center py-20 text-gray-400">Aucun avis pour le moment.</div>
@@ -54,6 +92,53 @@ export default function Testimonials() {
           ))}
         </div>
       </div>
+
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold mb-4">Donner mon avis</h2>
+            {submitted ? (
+              <p className="text-green-600 text-center py-4">Merci ! Votre avis sera publié après modération.</p>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                    <input type="text" value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                    <input type="text" value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Véhicule</label>
+                  <input type="text" value={form.vehicule} onChange={(e) => setForm({ ...form, vehicule: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Renault Clio..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                  <StarsInput value={form.note} onChange={(v) => setForm({ ...form, note: v })} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Votre avis *</label>
+                  <textarea value={form.texte} onChange={(e) => setForm({ ...form, texte: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows="3" required />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
+                  <button type="submit" disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                    {loading ? 'Envoi...' : 'Envoyer'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

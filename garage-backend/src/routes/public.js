@@ -6,5 +6,6 @@ router.post('/reservations', publicCtrl.create);
 router.get('/reservations/:reference', publicCtrl.show);
 router.get('/reservations/:reference/receipt', publicCtrl.receipt);
 router.get('/testimonials', testimonialCtrl.publicIndex);
+router.post('/testimonials', testimonialCtrl.publicStore);
 
 module.exports = router;

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Star, Plus, Trash2, Eye, EyeOff, Quote } from 'lucide-react';
+import { Star, Plus, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 export default function GestionTemoignages() {
   const [testimonials, setTestimonials] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ nom: '', prenom: '', vehicule: '', texte: '', note: 5 });
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => { load(); }, []);
 
@@ -40,6 +41,9 @@ export default function GestionTemoignages() {
     }
   };
 
+  const filtered = filter === 'all' ? testimonials : testimonials.filter(t => filter === 'pending' ? !t.actif : t.actif);
+  const pending = testimonials.filter(t => !t.actif).length;
+
   const Stars = ({ note, onChange }) => (
     <div className="flex gap-1">
       {[1,2,3,4,5].map(i => (
@@ -60,9 +64,25 @@ export default function GestionTemoignages() {
         </button>
       </div>
 
+      {pending > 0 && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          {pending} avis en attente de modération
+        </div>
+      )}
+
+      <div className="flex gap-2 mb-4">
+        {['all', 'pending', 'approved'].map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 text-sm rounded-lg ${filter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {f === 'all' ? 'Tous' : f === 'pending' ? `En attente (${pending})` : 'Approuvés'}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-3">
-        {testimonials.map((t) => (
-          <div key={t.id} className="bg-white rounded-xl shadow-sm p-4 flex items-start justify-between gap-4">
+        {filtered.map((t) => (
+          <div key={t.id} className={`bg-white rounded-xl shadow-sm p-4 flex items-start justify-between gap-4 border-l-4 ${t.actif ? 'border-l-green-500' : 'border-l-amber-400'}`}>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
@@ -70,20 +90,28 @@ export default function GestionTemoignages() {
                 </div>
                 <p className="font-medium text-gray-800">{t.prenom} {t.nom}</p>
                 {t.vehicule && <span className="text-xs text-gray-400">— {t.vehicule}</span>}
-                {!t.actif && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Masqué</span>}
+                {!t.actif && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">En attente</span>}
               </div>
               <Stars note={t.note} />
               <p className="text-sm text-gray-600 mt-1 italic">"{t.texte}"</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => handleToggle(t.id)} className="p-1.5 hover:bg-gray-100 rounded-lg" title={t.actif ? 'Masquer' : 'Afficher'}>
-                {t.actif ? <Eye className="h-4 w-4 text-gray-500" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
-              </button>
+              {!t.actif ? (
+                <button onClick={() => handleToggle(t.id)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium">
+                  <CheckCircle className="h-4 w-4" /> Approuver
+                </button>
+              ) : (
+                <button onClick={() => handleToggle(t.id)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg" title="Désactiver">
+                  <XCircle className="h-4 w-4 text-gray-400" />
+                </button>
+              )}
               <button onClick={() => handleDelete(t.id)} className="p-1.5 hover:bg-red-50 rounded-lg"><Trash2 className="h-4 w-4 text-red-500" /></button>
             </div>
           </div>
         ))}
-        {testimonials.length === 0 && <p className="text-center py-8 text-gray-400">Aucun témoignage</p>}
+        {filtered.length === 0 && <p className="text-center py-8 text-gray-400">Aucun témoignage</p>}
       </div>
 
       {showModal && (

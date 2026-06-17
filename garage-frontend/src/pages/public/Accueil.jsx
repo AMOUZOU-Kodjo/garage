@@ -44,6 +44,9 @@ export default function Accueil() {
             <Link to="/login" className="text-gray-500 hover:text-gray-700 text-sm px-3 py-2">
               Personnel
             </Link>
+            <Link to="/testimonials" className="text-gray-500 hover:text-gray-700 text-sm px-3 py-2">
+              Testimonials
+            </Link>
           </div>
         </div>
       </nav>
