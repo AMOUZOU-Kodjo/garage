@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Search, Plus, Check, X, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, Plus, Check, X, Calendar, Clock, User, Wrench } from 'lucide-react';
+import { cardHover } from '../../components/AnimatedPage';
 
 export default function ReservationsPage() {
   const [reservations, setReservations] = useState([]);
@@ -43,7 +45,7 @@ export default function ReservationsPage() {
 
   const statutBadge = (statut) => {
     const colors = { en_attente: 'bg-yellow-100 text-yellow-700', confirmé: 'bg-blue-100 text-blue-700', terminé: 'bg-green-100 text-green-700', annulé: 'bg-red-100 text-red-700' };
-    return <span className={`text-xs px-2 py-1 rounded-full ${colors[statut] || 'bg-gray-100'}`}>{statut}</span>;
+    return <span className={`text-xs px-2 py-1 rounded-full font-medium ${colors[statut] || 'bg-gray-100'}`}>{statut}</span>;
   };
 
   const filtered = reservations.filter((r) => {
@@ -64,63 +66,69 @@ export default function ReservationsPage() {
   };
 
   const sourceBadge = (source) => {
-    if (source === 'public') return <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded ml-1">WEB</span>;
-    return null;
-  };
-
-  const vehicleInfo = (r) => {
-    if (r.vehicule_marque) return `${r.vehicule_marque} ${r.vehicule_modele || ''}`.trim();
+    if (source === 'public') return <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded ml-1 font-medium">WEB</span>;
     return null;
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Réservations</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Réservations</h1>
+          <p className="text-sm text-gray-500">{reservations.length} réservation{reservations.length !== 1 ? 's' : ''}</p>
+        </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">
           <Plus className="h-4 w-4" /> Nouvelle réservation
         </button>
       </div>
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-        <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+        <input type="text" placeholder="Rechercher par client, date, référence..." value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
       </div>
 
       <div className="space-y-3">
-        {filtered.map((r) => (
-          <div key={r.id} className="bg-white rounded-xl shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <Calendar className="h-6 w-6 text-blue-600" />
+        {filtered.map((r, i) => (
+          <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} {...cardHover}>
+            <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-transparent hover:border-l-blue-500 transition-all">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-blue-400 to-blue-600 p-3 rounded-xl shadow-lg">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium flex items-center gap-1">
+                    <User className="h-4 w-4 text-gray-400" /> {clientName(r)}{sourceBadge(r.source)}
+                  </p>
+                  <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                    <Calendar className="h-3 w-3" /> {r.date_reservation} <Clock className="h-3 w-3 ml-1" /> {r.heure_reservation}
+                  </p>
+                  {clientInfo(r) && <p className="text-xs text-gray-400">{clientInfo(r)}</p>}
+                  <p className="text-sm text-gray-400 mt-1">{r.description_probleme || 'Aucune description'}</p>
+                  {r.mecanicien && <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> Mécanicien: {r.mecanicien.prenom} {r.mecanicien.nom}</p>}
+                </div>
               </div>
-              <div>
-                <p className="font-medium">{clientName(r)}{sourceBadge(r.source)}</p>
-                <p className="text-sm text-gray-500">{r.date_reservation} à {r.heure_reservation}</p>
-                {clientInfo(r) && <p className="text-xs text-gray-400">{clientInfo(r)}</p>}
-                {vehicleInfo(r) && <p className="text-xs text-gray-400">{vehicleInfo(r)}</p>}
-                <p className="text-sm text-gray-400 mt-1">{r.description_probleme || 'Aucune description'}</p>
-                {r.mecanicien && <p className="text-xs text-gray-400 mt-1">Mécanicien: {r.mecanicien.prenom} {r.mecanicien.nom}</p>}
+              <div className="flex items-center gap-3 shrink-0">
+                {statutBadge(r.statut)}
+                {r.statut === 'en_attente' && (
+                  <>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleConfirm(r.id)}
+                      className="p-2 hover:bg-green-50 rounded-lg transition-colors"><Check className="h-4 w-4 text-green-600" /></motion.button>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleCancel(r.id)}
+                      className="p-2 hover:bg-red-50 rounded-lg transition-colors"><X className="h-4 w-4 text-red-600" /></motion.button>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {statutBadge(r.statut)}
-              {r.statut === 'en_attente' && (
-                <>
-                  <button onClick={() => handleConfirm(r.id)} className="p-2 hover:bg-green-50 rounded-lg"><Check className="h-4 w-4 text-green-600" /></button>
-                  <button onClick={() => handleCancel(r.id)} className="p-2 hover:bg-red-50 rounded-lg"><X className="h-4 w-4 text-red-600" /></button>
-                </>
-              )}
-            </div>
-          </div>
+          </motion.div>
         ))}
+        {filtered.length === 0 && <div className="text-center py-12 text-gray-400">Aucune réservation trouvée</div>}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Nouvelle réservation</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
@@ -153,11 +161,11 @@ export default function ReservationsPage() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Créer</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">Créer</button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

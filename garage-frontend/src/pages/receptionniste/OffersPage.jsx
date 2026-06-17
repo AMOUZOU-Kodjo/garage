@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, Pencil, Trash2, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Pencil, Trash2, Gift, Percent, Calendar } from 'lucide-react';
+import { cardHover } from '../../components/AnimatedPage';
 
 export default function OffersPage() {
   const { user } = useAuth();
@@ -52,45 +54,54 @@ export default function OffersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Offres promotionnelles</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Offres promotionnelles</h1>
+          <p className="text-sm text-gray-500">{offers.length} offre{offers.length !== 1 ? 's' : ''}</p>
+        </div>
         <button onClick={() => { setEditing(null); setForm({ titre: '', description: '', remise: '', date_debut: '', date_fin: '', actif: true }); setShowModal(true); }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">
           <Plus className="h-4 w-4" /> Nouvelle offre
         </button>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">{error}</div>}
+      {error && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">{error}</motion.div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {offers.map((offer) => (
-          <div key={offer.id} className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${offer.actif ? 'border-green-500' : 'border-gray-300'}`}>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <Gift className={`h-5 w-5 ${offer.actif ? 'text-green-600' : 'text-gray-400'}`} />
-                <h3 className="font-semibold text-gray-800">{offer.titre}</h3>
+        {offers.map((offer, i) => (
+          <motion.div key={offer.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} {...cardHover}>
+            <div className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${offer.actif ? 'border-l-green-500' : 'border-l-gray-300'} h-full`}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className={`p-2 rounded-lg ${offer.actif ? 'bg-green-100' : 'bg-gray-100'}`}>
+                    <Gift className={`h-5 w-5 ${offer.actif ? 'text-green-600' : 'text-gray-400'}`} />
+                  </div>
+                  <h3 className="font-semibold text-gray-800">{offer.titre}</h3>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => handleEdit(offer)} className="p-1.5 hover:bg-gray-100 rounded transition-colors"><Pencil className="h-4 w-4 text-gray-500" /></button>
+                  {user?.role === 'directeur' && (
+                    <button onClick={() => handleDelete(offer.id)} className="p-1.5 hover:bg-red-50 rounded transition-colors"><Trash2 className="h-4 w-4 text-red-500" /></button>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => handleEdit(offer)} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="h-4 w-4 text-gray-500" /></button>
-                {user?.role === 'directeur' && (
-                  <button onClick={() => handleDelete(offer.id)} className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="h-4 w-4 text-red-500" /></button>
-                )}
+              <p className="text-sm text-gray-500 mb-3 line-clamp-2">{offer.description}</p>
+              <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-1 text-lg font-bold text-blue-600">
+                  <Percent className="h-4 w-4" /> {offer.remise}%
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${offer.actif ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {offer.actif ? 'Active' : 'Inactive'}
+                </span>
               </div>
+              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1"><Calendar className="h-3 w-3" /> {offer.date_debut} → {offer.date_fin}</p>
             </div>
-            <p className="text-sm text-gray-500 mt-2">{offer.description}</p>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-lg font-bold text-blue-600">{offer.remise}%</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${offer.actif ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                {offer.actif ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">{offer.date_debut} → {offer.date_fin}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">{editing ? 'Modifier' : 'Nouvelle'} offre</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
@@ -121,11 +132,11 @@ export default function OffersPage() {
               </label>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">{editing ? 'Modifier' : 'Créer'}</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">{editing ? 'Modifier' : 'Créer'}</button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

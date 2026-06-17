@@ -53,6 +53,7 @@ export default function App() {
               <Route path="mecaniciens" element={<GestionMecaniciens />} />
               <Route path="finances" element={<Finances />} />
               <Route path="statistiques" element={<Statistiques />} />
+              <Route path="temoignages" element={<GestionTemoignages />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

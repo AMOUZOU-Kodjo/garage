@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Search, Plus, Eye, LogOut, Receipt } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, Plus, Eye, LogOut, Receipt, Car } from 'lucide-react';
+import { cardHover } from '../../components/AnimatedPage';
 import ReceiptComponent from './Receipt';
 
 export default function VehiclesPage() {
@@ -85,7 +87,7 @@ export default function VehiclesPage() {
   const statutBadge = (statut) => {
     const colors = { en_attente: 'bg-yellow-100 text-yellow-700', en_cours: 'bg-blue-100 text-blue-700', reparé: 'bg-green-100 text-green-700', libéré: 'bg-gray-100 text-gray-700' };
     const labels = { en_attente: 'En attente', en_cours: 'En cours', reparé: 'Réparé', libéré: 'Libéré' };
-    return <span className={`text-xs px-2 py-1 rounded-full ${colors[statut]}`}>{labels[statut] || statut}</span>;
+    return <span className={`text-xs px-2 py-1 rounded-full font-medium ${colors[statut]}`}>{labels[statut] || statut}</span>;
   };
 
   const filtered = vehicles.filter((v) =>
@@ -95,9 +97,12 @@ export default function VehiclesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Véhicules</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Véhicules</h1>
+          <p className="text-sm text-gray-500">{vehicles.length} véhicule{vehicles.length !== 1 ? 's' : ''}</p>
+        </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">
           <Plus className="h-4 w-4" /> Nouveau véhicule
         </button>
       </div>
@@ -105,7 +110,7 @@ export default function VehiclesPage() {
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
         <input type="text" placeholder="Rechercher par immatriculation, marque..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -121,37 +126,39 @@ export default function VehiclesPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filtered.map((v) => (
-              <tr key={v.id} className="hover:bg-gray-50">
+            {filtered.map((v, i) => (
+              <motion.tr key={v.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                className="hover:bg-blue-50/50 transition-colors">
                 <td className="px-4 py-3 font-medium">{v.immatriculation}</td>
-                <td className="px-4 py-3">{v.marque} {v.modele}</td>
-                <td className="px-4 py-3">{v.client ? `${v.client.prenom} ${v.client.nom}` : '-'}</td>
-                <td className="px-4 py-3">{v.mecanicien ? `${v.mecanicien.prenom} ${v.mecanicien.nom}` : '-'}</td>
+                <td className="px-4 py-3"><span className="flex items-center gap-1"><Car className="h-3 w-3 text-gray-400" /> {v.marque} {v.modele}</span></td>
+                <td className="px-4 py-3 text-sm">{v.client ? `${v.client.prenom} ${v.client.nom}` : '-'}</td>
+                <td className="px-4 py-3 text-sm">{v.mecanicien ? `${v.mecanicien.prenom} ${v.mecanicien.nom}` : '-'}</td>
                 <td className="px-4 py-3">{statutBadge(v.statut)}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => setShowDetail(v)} className="p-1.5 hover:bg-gray-100 rounded-lg" title="Détails"><Eye className="h-4 w-4 text-gray-500" /></button>
+                  <button onClick={() => setShowDetail(v)} className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors" title="Détails"><Eye className="h-4 w-4 text-blue-500" /></button>
                   {v.statut === 'en_attente' && (
                     <select onChange={(e) => e.target.value && handleAssign(v.id, parseInt(e.target.value))}
-                      className="ml-1 text-xs border rounded px-2 py-1" defaultValue="">
+                      className="ml-1 text-xs border rounded px-2 py-1 bg-white" defaultValue="">
                       <option value="" disabled>Assigner...</option>
                       {mechanics.map((m) => <option key={m.id} value={m.id}>{m.prenom} {m.nom}</option>)}
                     </select>
                   )}
                   {v.statut === 'reparé' && (
-                    <button onClick={() => openLiberer(v)} className="p-1.5 hover:bg-green-50 rounded-lg" title="Libérer avec reçu">
+                    <button onClick={() => openLiberer(v)} className="p-1.5 hover:bg-green-50 rounded-lg transition-colors" title="Libérer avec reçu">
                       <LogOut className="h-4 w-4 text-green-600" />
                     </button>
                   )}
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
+        {filtered.length === 0 && <div className="text-center py-12 text-gray-400">Aucun véhicule trouvé</div>}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Nouveau véhicule</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -187,16 +194,16 @@ export default function VehiclesPage() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Créer</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">Créer</button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {showLibererModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowLibererModal(null)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowLibererModal(null)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-2">Libérer le véhicule</h2>
             <p className="text-sm text-gray-500 mb-4">{showLibererModal.marque} {showLibererModal.modele} - {showLibererModal.immatriculation}</p>
             <form onSubmit={handleLiberer} className="space-y-3">
@@ -215,22 +222,22 @@ export default function VehiclesPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total (€)</label>
                 <input type="number" step="0.01" value={libererForm.montant_total} readOnly
-                  className="w-full px-3 py-2 border bg-gray-50 rounded-lg outline-none text-green-700 font-bold" placeholder="0.00" />
+                  className="w-full px-3 py-2 border bg-gray-50 rounded-lg outline-none text-green-700 font-bold text-lg" placeholder="0.00" />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowLibererModal(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all hover:shadow-lg active:scale-95">
                   <Receipt className="h-4 w-4" /> Libérer & Reçu
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {showDetail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDetail(null)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDetail(null)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Détails du véhicule</h2>
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-4">
@@ -250,9 +257,9 @@ export default function VehiclesPage() {
                 <p className="font-medium">{showDetail.description_panne || 'Aucune description'}</p>
               </div>
             </div>
-            <button onClick={() => setShowDetail(null)} className="mt-4 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Fermer</button>
-          </div>
-        </div>
+            <button onClick={() => setShowDetail(null)} className="mt-4 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Fermer</button>
+          </motion.div>
+        </motion.div>
       )}
 
       {showReceipt && (

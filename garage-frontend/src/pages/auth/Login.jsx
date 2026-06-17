@@ -51,12 +51,12 @@ export default function Login() {
             Se connecter
           </button>
         </form>
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
+        {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
           <p className="font-medium text-gray-700 mb-2">Comptes de test :</p>
           <p>Directeur : directeur@garage.com / password123</p>
           <p>Réceptionniste : receptionniste@garage.com / password123</p>
           <p>Mécanicien : mecanicien1@garage.com / password123</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

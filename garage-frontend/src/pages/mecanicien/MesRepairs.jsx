@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Plus, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, CheckCircle, Wrench, Clock, Euro, Settings } from 'lucide-react';
+import { cardHover } from '../../components/AnimatedPage';
 
 export default function MesRepairs() {
   const [repairs, setRepairs] = useState([]);
@@ -34,40 +36,55 @@ export default function MesRepairs() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Mes Réparations</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Mes Réparations</h1>
+          <p className="text-sm text-gray-500">{repairs.length} réparation{repairs.length !== 1 ? 's' : ''}</p>
+        </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">
           <Plus className="h-4 w-4" /> Nouvelle réparation
         </button>
       </div>
 
       <div className="space-y-3">
-        {repairs.map((r) => (
-          <div key={r.id} className="bg-white rounded-xl shadow-sm p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-medium">{r.vehicule ? `${r.vehicule.marque} ${r.vehicule.modele} (${r.vehicule.immatriculation})` : 'Véhicule inconnu'}</p>
-                <p className="text-sm text-gray-500 mt-1">Panne: {r.panne_constatee}</p>
-                <p className="text-sm text-gray-500">Solution: {r.solution_appliquee || 'En cours...'}</p>
-                {r.outils_utilises && <p className="text-sm text-gray-400">Outils: {r.outils_utilises}</p>}
-                {r.cout_main_oeuvre && <p className="text-sm font-medium text-blue-600 mt-1">{r.cout_main_oeuvre} €</p>}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{new Date(r.date_intervention).toLocaleDateString()}</span>
-                {!r.solution_appliquee && (
-                  <button onClick={() => handleMarquerRepare(r.id)} className="p-2 hover:bg-green-50 rounded-lg" title="Marquer comme réparé">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  </button>
-                )}
+        {repairs.map((r, i) => (
+          <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} {...cardHover}>
+            <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-transparent hover:border-l-blue-500 transition-all">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Wrench className="h-4 w-4 text-gray-400" />
+                    <p className="font-medium">{r.vehicule ? `${r.vehicule.marque} ${r.vehicule.modele} (${r.vehicule.immatriculation})` : 'Véhicule inconnu'}</p>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1"><span className="font-medium text-gray-700">Panne:</span> {r.panne_constatee}</p>
+                  <p className="text-sm text-gray-500"><span className="font-medium text-gray-700">Solution:</span> {r.solution_appliquee || 'En cours...'}</p>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {r.outils_utilises && <span className="text-xs text-gray-400 flex items-center gap-1"><Settings className="h-3 w-3" /> {r.outils_utilises}</span>}
+                    {r.duree_intervention && <span className="text-xs text-gray-400 flex items-center gap-1"><Clock className="h-3 w-3" /> {r.duree_intervention} min</span>}
+                    {r.cout_main_oeuvre && <span className="text-sm font-medium text-blue-600 flex items-center gap-1"><Euro className="h-3 w-3" /> {r.cout_main_oeuvre} €</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-4">
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
+                    {new Date(r.date_intervention).toLocaleDateString()}
+                  </span>
+                  {!r.solution_appliquee && (
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleMarquerRepare(r.id)}
+                      className="p-2 hover:bg-green-50 rounded-lg transition-colors" title="Marquer comme réparé">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
+        {repairs.length === 0 && <div className="text-center py-12 text-gray-400">Aucune réparation</div>}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Nouvelle réparation</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
@@ -101,11 +118,11 @@ export default function MesRepairs() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Créer</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95">Créer</button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

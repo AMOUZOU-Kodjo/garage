@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
 const start = async () => {
   try {
     require('./models');
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log('Database synced');
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

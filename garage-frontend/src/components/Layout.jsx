@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Menu, X, Wrench, Car, Calendar, Users, BarChart3, ClipboardList, Gift, Settings, Home, Euro, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
+import AnimatedPage from './AnimatedPage';
 
 const navConfig = {
   receptionniste: [
@@ -22,6 +23,7 @@ const navConfig = {
     { to: '/app/directeur/mecaniciens', label: 'Mécaniciens', icon: Settings },
     { to: '/app/directeur/finances', label: 'Finances', icon: Euro },
     { to: '/app/directeur/statistiques', label: 'Statistiques', icon: BarChart3 },
+    { to: '/app/directeur/temoignages', label: 'Témoignages', icon: MessageSquare },
   ],
 };
 
@@ -79,7 +81,9 @@ export default function Layout() {
           <h1 className="text-lg font-semibold">GarageAuto</h1>
         </header>
         <main className="flex-1 overflow-auto p-4 lg:p-6">
-          <Outlet />
+          <AnimatedPage>
+            <Outlet />
+          </AnimatedPage>
         </main>
       </div>
     </div>
