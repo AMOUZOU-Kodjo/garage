@@ -46,9 +46,32 @@ export default function ReservationsPage() {
     return <span className={`text-xs px-2 py-1 rounded-full ${colors[statut] || 'bg-gray-100'}`}>{statut}</span>;
   };
 
-  const filtered = reservations.filter((r) =>
-    `${r.client?.nom || ''} ${r.client?.prenom || ''} ${r.date_reservation}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = reservations.filter((r) => {
+    const clientName = r.client ? `${r.client.nom} ${r.client.prenom}` : `${r.client_nom || ''} ${r.client_prenom || ''}`;
+    return `${clientName} ${r.date_reservation} ${r.reference || ''}`.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const clientName = (r) => {
+    if (r.client) return `${r.client.prenom} ${r.client.nom}`;
+    if (r.client_prenom || r.client_nom) return `${r.client_prenom || ''} ${r.client_nom || ''}`;
+    return 'Client inconnu';
+  };
+
+  const clientInfo = (r) => {
+    if (r.client) return null;
+    if (r.client_telephone) return r.client_telephone;
+    return null;
+  };
+
+  const sourceBadge = (source) => {
+    if (source === 'public') return <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded ml-1">WEB</span>;
+    return null;
+  };
+
+  const vehicleInfo = (r) => {
+    if (r.vehicule_marque) return `${r.vehicule_marque} ${r.vehicule_modele || ''}`.trim();
+    return null;
+  };
 
   return (
     <div>
@@ -74,8 +97,10 @@ export default function ReservationsPage() {
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="font-medium">{r.client ? `${r.client.prenom} ${r.client.nom}` : 'Client inconnu'}</p>
+                <p className="font-medium">{clientName(r)}{sourceBadge(r.source)}</p>
                 <p className="text-sm text-gray-500">{r.date_reservation} à {r.heure_reservation}</p>
+                {clientInfo(r) && <p className="text-xs text-gray-400">{clientInfo(r)}</p>}
+                {vehicleInfo(r) && <p className="text-xs text-gray-400">{vehicleInfo(r)}</p>}
                 <p className="text-sm text-gray-400 mt-1">{r.description_probleme || 'Aucune description'}</p>
                 {r.mecanicien && <p className="text-xs text-gray-400 mt-1">Mécanicien: {r.mecanicien.prenom} {r.mecanicien.nom}</p>}
               </div>

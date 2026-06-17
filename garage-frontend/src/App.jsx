@@ -15,14 +15,21 @@ import Finances from './pages/directeur/Finances';
 import Statistiques from './pages/directeur/Statistiques';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import Accueil from './pages/public/Accueil';
+import PublicReservation from './pages/public/Reservation';
+import PublicSuivi from './pages/public/Suivi';
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Accueil />} />
+          <Route path="/reservation" element={<PublicReservation />} />
+          <Route path="/reservation/:reference" element={<PublicSuivi />} />
+          <Route path="/suivi" element={<PublicSuivi />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<RoleRedirect />} />
             <Route path="receptionniste">
               <Route index element={<DashboardReceptionniste />} />

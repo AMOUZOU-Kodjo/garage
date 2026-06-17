@@ -16,6 +16,13 @@ export default function VehiclesPage() {
   const [libererForm, setLibererForm] = useState({ cout_main_oeuvre: '', montant_pieces: '', montant_total: '' });
 
   useEffect(() => {
+    const mo = parseFloat(libererForm.cout_main_oeuvre) || 0;
+    const pieces = parseFloat(libererForm.montant_pieces) || 0;
+    const total = mo + pieces;
+    setLibererForm(f => ({ ...f, montant_total: total > 0 ? total.toString() : '' }));
+  }, [libererForm.cout_main_oeuvre, libererForm.montant_pieces]);
+
+  useEffect(() => {
     loadVehicles();
     api.get('/clients').then((r) => setClients(r.data)).catch(() => {});
     api.get('/mechanics').then((r) => setMechanics(r.data)).catch(() => {});
@@ -39,9 +46,21 @@ export default function VehiclesPage() {
     loadVehicles();
   };
 
-  const openLiberer = (vehicle) => {
-    setLibererForm({ cout_main_oeuvre: '', montant_pieces: '', montant_total: '' });
-    setShowLibererModal(vehicle);
+  const openLiberer = async (vehicle) => {
+    try {
+      const res = await api.get(`/vehicles/${vehicle.id}`);
+      const v = res.data;
+      const repair = v.reparation || {};
+      setLibererForm({
+        cout_main_oeuvre: repair.cout_main_oeuvre || '',
+        montant_pieces: repair.montant_pieces || '',
+        montant_total: repair.montant_total || '',
+      });
+      setShowLibererModal(v);
+    } catch {
+      setLibererForm({ cout_main_oeuvre: '', montant_pieces: '', montant_total: '' });
+      setShowLibererModal(vehicle);
+    }
   };
 
   const handleLiberer = async (e) => {
@@ -195,10 +214,8 @@ export default function VehiclesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total (€)</label>
-                <input type="number" step="0.01" value={libererForm.montant_total}
-                  onChange={(e) => setLibererForm({ ...libererForm, montant_total: e.target.value })}
-                  placeholder={`${(parseFloat(libererForm.cout_main_oeuvre) || 0) + (parseFloat(libererForm.montant_pieces) || 0)}`}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input type="number" step="0.01" value={libererForm.montant_total} readOnly
+                  className="w-full px-3 py-2 border bg-gray-50 rounded-lg outline-none text-green-700 font-bold" placeholder="0.00" />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowLibererModal(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>

@@ -4,15 +4,21 @@ const cors = require('cors');
 const path = require('path');
 const sequelize = require('./config/database');
 const routes = require('./routes');
+const publicRoutes = require('./routes/public');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.use('/api', routes);
+app.use('/api/public', publicRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Garage Management API' });

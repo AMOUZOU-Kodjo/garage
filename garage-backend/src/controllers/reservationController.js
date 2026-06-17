@@ -1,5 +1,12 @@
 const { Reservation, Client, User, Repair } = require('../models');
 
+const generateReference = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let ref = 'RES-';
+  for (let i = 0; i < 8; i++) ref += chars.charAt(Math.floor(Math.random() * chars.length));
+  return ref;
+};
+
 const sanitizeReservation = (body) => ({
   ...body,
   client_id: body.client_id ? parseInt(body.client_id) : null,
@@ -41,6 +48,15 @@ exports.show = async (req, res) => {
 exports.store = async (req, res) => {
   const data = { ...sanitizeReservation(req.body) };
   if (req.user.role === 'receptionniste') data.receptionniste_id = req.user.id;
+  if (!data.reference) {
+    let reference;
+    let exists = true;
+    while (exists) {
+      reference = generateReference();
+      exists = await Reservation.findOne({ where: { reference } });
+    }
+    data.reference = reference;
+  }
   const reservation = await Reservation.create(data);
   res.status(201).json(reservation);
 };
